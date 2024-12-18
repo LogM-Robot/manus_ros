@@ -12,7 +12,7 @@
 // Initialize the static member variable
 SDKMinimalClient *SDKMinimalClient::s_Instance = nullptr;
 
-SDKMinimalClient::SDKMinimalClient(std::shared_ptr<rclcpp::Node> publisher)
+SDKMinimalClient::SDKMinimalClient(std::shared_ptr<ros::NodeHandle> publisher)
 	: m_PublisherNode(publisher)
 {
 	s_Instance = this;
@@ -33,10 +33,13 @@ ClientReturnCode SDKMinimalClient::Initialize()
 		return ClientReturnCode::ClientReturnCode_FailedPlatformSpecificInitialization;
 	}*/
 
+        
+
 	const ClientReturnCode t_IntializeResult = InitializeSDK();
 	if (t_IntializeResult != ClientReturnCode::ClientReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to initialize the Manus SDK");
+		ROS_ERROR("Failed to initialize the Manus SDK");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to initialize the Manus SDK");
 		return ClientReturnCode::ClientReturnCode_FailedToInitialize;
 	}
 
@@ -52,14 +55,16 @@ ClientReturnCode SDKMinimalClient::InitializeSDK()
 	const SDKReturnCode t_InitializeResult = CoreSdk_Initialize(SessionType::SessionType_CoreSDK);
 	if (t_InitializeResult != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to initialize the SDK");
+		ROS_ERROR("Failed to initialize the SDK");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to initialize the SDK");
 		return ClientReturnCode::ClientReturnCode_FailedToInitialize;
 	}
 
 	const ClientReturnCode t_CallBackResults = RegisterAllCallbacks();
 	if (t_CallBackResults != ::ClientReturnCode::ClientReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to register all callbacks");
+		ROS_ERROR("Failed to register all callbacks");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to register all callbacks");
 		return t_CallBackResults;
 	}
 
@@ -95,7 +100,8 @@ ClientReturnCode SDKMinimalClient::ShutDown()
 	const SDKReturnCode t_Result = CoreSdk_ShutDown();
 	if (t_Result != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to shut down the SDK");
+		ROS_ERROR("Failed to shut down the SDK");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to shut down the SDK");
 		return ClientReturnCode::ClientReturnCode_FailedToShutDownSDK;
 	}
 
@@ -103,8 +109,9 @@ ClientReturnCode SDKMinimalClient::ShutDown()
 	{
 		return ClientReturnCode::ClientReturnCode_FailedPlatformSpecificShutdown;
 	}*/
-
-	RCLCPP_INFO(m_PublisherNode->get_logger(), "Manus SDK has shut down.");
+	
+	ROS_INFO("Manus SDK has shut down.");
+	// RCLCPP_INFO(m_PublisherNode->get_logger(), "Manus SDK has shut down.");
 	return ClientReturnCode::ClientReturnCode_Success;
 }
 
@@ -119,7 +126,8 @@ ClientReturnCode SDKMinimalClient::RegisterAllCallbacks()
 	const SDKReturnCode t_RegisterSkeletonCallbackResult = CoreSdk_RegisterCallbackForSkeletonStream(*OnSkeletonStreamCallback);
 	if (t_RegisterSkeletonCallbackResult != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to register the skeleton callback");
+		ROS_ERROR("Failed to register the skeleton callback");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to register the skeleton callback");
 		return ClientReturnCode::ClientReturnCode_FailedToInitialize;
 	}
 
@@ -132,14 +140,18 @@ void SDKMinimalClient::ConnectToHost()
 {
 	// first loop until we get a connection
 	std::cout << "minimal client is connecting to host. (make sure it is running)\n";
-	RCLCPP_INFO(m_PublisherNode->get_logger(), "Manus client is connecting to host. (make sure it is running)");
+	
+	ROS_INFO("Manus client is connecting to host. (make sure it is running)");
+	// RCLCPP_INFO(m_PublisherNode->get_logger(), "Manus client is connecting to host. (make sure it is running)");
 	while (Connect() != ClientReturnCode::ClientReturnCode_Success)
 	{
-		RCLCPP_WARN(m_PublisherNode->get_logger(), "Manus client could not connect. Trying again in a second.");
+		ROS_WARN("Manus client could not connect. Trying again in a second.");
+		// RCLCPP_WARN(m_PublisherNode->get_logger(), "Manus client could not connect. Trying again in a second.");
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
-
-	RCLCPP_INFO(m_PublisherNode->get_logger(), "Manus client connected to host.");
+	
+	ROS_ERROR("Manus client connected to host.");
+	// RCLCPP_INFO(m_PublisherNode->get_logger(), "Manus client connected to host.");
 
 	// Upload a simple skeleton with a chain. This will just be a left hand for the first user index.
 	LoadTestSkeleton();
@@ -173,7 +185,8 @@ ClientReturnCode SDKMinimalClient::Connect()
 	SDKReturnCode t_StartResult = CoreSdk_LookForHosts(1, false);
 	if (t_StartResult != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to find hosts");
+		ROS_ERROR("Failed to find hosts");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to find hosts");
 		return ClientReturnCode::ClientReturnCode_FailedToFindHosts;
 	}
 
@@ -181,13 +194,15 @@ ClientReturnCode SDKMinimalClient::Connect()
 	SDKReturnCode t_NumberResult = CoreSdk_GetNumberOfAvailableHostsFound(&t_NumberOfHostsFound);
 	if (t_NumberResult != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to find hosts");
+		ROS_ERROR("Failed to find hosts");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to find hosts");
 		return ClientReturnCode::ClientReturnCode_FailedToFindHosts;
 	}
 
 	if (t_NumberOfHostsFound == 0)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "No hosts found");
+		ROS_ERROR("No hosts found");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "No hosts found");
 		return ClientReturnCode::ClientReturnCode_FailedToFindHosts;
 	}
 
@@ -197,7 +212,8 @@ ClientReturnCode SDKMinimalClient::Connect()
 	SDKReturnCode t_HostsResult = CoreSdk_GetAvailableHostsFound(t_AvailableHosts.get(), t_NumberOfHostsFound);
 	if (t_HostsResult != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to find hosts");
+		ROS_ERROR("Failed to find hosts");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to find hosts");
 		return ClientReturnCode::ClientReturnCode_FailedToFindHosts;
 	}
 
@@ -205,7 +221,8 @@ ClientReturnCode SDKMinimalClient::Connect()
 
 	if (t_ConnectResult == SDKReturnCode::SDKReturnCode_NotConnected)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to connect to host");
+		ROS_ERROR("Failed to connect to host");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to connect to host");
 		return ClientReturnCode::ClientReturnCode_FailedToConnect;
 	}
 
@@ -242,19 +259,22 @@ void SDKMinimalClient::LoadTestSkeleton()
         SDKReturnCode t_Res = CoreSdk_CreateSkeletonSetup(t_SKL, &t_SklIndex);
         if (t_Res != SDKReturnCode::SDKReturnCode_Success)
         {
-			RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to create skeleton setup");
+			ROS_ERROR("Failed to create skeleton setup");
+			// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to create skeleton setup");
             return;
         }
 
         // setup nodes and chains for the skeleton hand
         if (!SetupHandNodes(t_SklIndex, (hand == 0)))
         {
-			RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to setup hand nodes");
+			ROS_ERROR("Failed to setup hand nodes");
+			// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to setup hand nodes");
             return;
         }
         if (!SetupHandChains(t_SklIndex, (hand == 0)))
         {
-			RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to setup hand chains");
+			ROS_ERROR("Failed to setup hand chains");
+			// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to setup hand chains");
             return;
         }
 
@@ -262,12 +282,15 @@ void SDKMinimalClient::LoadTestSkeleton()
         t_Res = CoreSdk_LoadSkeleton(t_SklIndex, &m_GloveIDs[hand]);
         if (t_Res != SDKReturnCode::SDKReturnCode_Success)
         {
-			RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to load skeleton");
+			ROS_ERROR("Failed to load skeleton");
+			// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to load skeleton");
             return;
         }
         else 
         {
-			RCLCPP_INFO_STREAM(m_PublisherNode->get_logger(), "Skeleton ID:" << &m_GloveIDs[hand] << " loaded successfully");
+			ROS_INFO("Skeleton ID: # loaded successfully");
+			// ROS_INFO("Skeleton ID:" << &m_GloveIDs[hand] << " loaded successfully");
+			// RCLCPP_INFO_STREAM(m_PublisherNode->get_logger(), "Skeleton ID:" << &m_GloveIDs[hand] << " loaded successfully");
         }
     }
 }
@@ -386,7 +409,8 @@ bool SDKMinimalClient::SetupHandNodes(uint32_t p_SklIndex, bool isRightHand)
 	SDKReturnCode t_Res = CoreSdk_AddNodeToSkeletonSetup(p_SklIndex, CreateNodeSetup(0, 0, 0, 0, 0, "Hand"));
 	if (t_Res != SDKReturnCode::SDKReturnCode_Success)
 	{
-		RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Node To Skeleton Setup");
+		ROS_ERROR("Failed to Add Node To Skeleton Setup");
+		// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Node To Skeleton Setup");
 		return false;
 	}
 
@@ -405,7 +429,8 @@ bool SDKMinimalClient::SetupHandNodes(uint32_t p_SklIndex, bool isRightHand)
 				t_Res = CoreSdk_AddNodeToSkeletonSetup(p_SklIndex, CreateNodeSetup(1 + t_FingerId + j, t_ParentID, t_Fingers_Left[i * 4 + j].x, t_Fingers_Left[i * 4 + j].y, t_Fingers_Left[i * 4 + j].z, "fingerdigit"));
 			if (t_Res != SDKReturnCode::SDKReturnCode_Success)
 			{
-				RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Node To Skeleton Setup");
+				ROS_ERROR("Failed to Add Node To Skeleton Setup");
+				// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Node To Skeleton Setup");
 				return false;
 			}
 			t_ParentID = 1 + t_FingerId + j;
@@ -449,7 +474,8 @@ bool SDKMinimalClient::SetupHandChains(uint32_t p_SklIndex, bool isRightHand)
 		SDKReturnCode t_Res = CoreSdk_AddChainToSkeletonSetup(p_SklIndex, t_Chain);
 		if (t_Res != SDKReturnCode::SDKReturnCode_Success)
 		{
-			RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Chain To Skeleton Setup");
+			ROS_ERROR("Failed to Add Chain To Skeleton Setup");
+			// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Chain To Skeleton Setup");
 			return false;
 		}
 	}
@@ -500,7 +526,8 @@ bool SDKMinimalClient::SetupHandChains(uint32_t p_SklIndex, bool isRightHand)
 		SDKReturnCode t_Res = CoreSdk_AddChainToSkeletonSetup(p_SklIndex, t_Chain);
 		if (t_Res != SDKReturnCode::SDKReturnCode_Success)
 		{
-			RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Chain To Skeleton Setup");
+			ROS_ERROR("Failed to Add Chain To Skeleton Setup");
+			// RCLCPP_ERROR(m_PublisherNode->get_logger(), "Failed to Add Chain To Skeleton Setup");
 			return false;
 		}
 	}

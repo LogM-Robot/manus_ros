@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "rclcpp/rclcpp.hpp"
+// #include "rclcpp/rclcpp.hpp"
+#include "ros/ros.h"
 #include "ManusSDK.h"
 #include <mutex>
 #include <vector>
@@ -54,7 +55,7 @@ public:
 class SDKMinimalClient 
 {
 public:
-	SDKMinimalClient(std::shared_ptr<rclcpp::Node> publisherNode);
+	SDKMinimalClient(std::shared_ptr<ros::NodeHandle> publisherNode);
 	~SDKMinimalClient();
 	ClientReturnCode Initialize();
 	ClientReturnCode InitializeSDK();
@@ -106,6 +107,6 @@ protected:
 
 	uint32_t m_FrameCounter = 0;
 
-	std::shared_ptr<rclcpp::Node> m_PublisherNode;
+	std::shared_ptr<ros::NodeHandle> m_PublisherNode;
 };
 
