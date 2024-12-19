@@ -38,3 +38,5 @@ ext/MANUS_Core*
 build
 install
 log
+
+.vscode/

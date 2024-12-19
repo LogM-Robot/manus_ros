@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>manus_ros1</name>
+  <name>manus_ros</name>
   <version>0.0.1</version>
   <description>ROS 1 Node for Communicating With Manus SDK for VR Glove Input</description>
   <maintainer email="trent@iotdesignshop.com">Trent Shumay</maintainer>
@@ -24,5 +24,3 @@
     <build_type>catkin</build_type>
   </export>
 </package>
-
-
