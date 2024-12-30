@@ -99,14 +99,6 @@ ClientReturnCode SDKMinimalClient::InitializeSDK()
 		return ClientReturnCode::ClientReturnCode_FailedToInitialize;
 	}
 
-	// set the hand motion mode of the RawSkeletonStream. This is optional and can be set to any of the HandMotion enum values. Default = None
-	// auto will make it move based on available tracking data. If none is available IMU rotation will be used.
-	// const SDKReturnCode t_HandMotionResult = CoreSdk_SetRawSkeletonHandMotion(HandMotion_None);
-	// if (t_HandMotionResult != SDKReturnCode::SDKReturnCode_Success)
-	// {
-	// 	return ClientReturnCode::ClientReturnCode_FailedToInitialize;
-	// }
-
 	return ClientReturnCode::ClientReturnCode_Success;
 }
 
@@ -149,13 +141,6 @@ ClientReturnCode SDKMinimalClient::RegisterAllCallbacks()
 		return ClientReturnCode::ClientReturnCode_FailedToInitialize;
 	}
 
-	const SDKReturnCode t_RegisterRawSkeletonCallbackResult = CoreSdk_RegisterCallbackForRawSkeletonStream(*OnRawSkeletonStreamCallback);
-	if (t_RegisterRawSkeletonCallbackResult != SDKReturnCode::SDKReturnCode_Success)
-	{
-		ROS_ERROR("Failed to register callback function for processing raw skeletal data from Manus Core");
-		return ClientReturnCode::ClientReturnCode_FailedToInitialize;
-	}
-
 	return ClientReturnCode::ClientReturnCode_Success;
 }
 
@@ -180,14 +165,6 @@ void SDKMinimalClient::ConnectToHost()
 
 	// Upload a simple skeleton with a chain. This will just be a left hand for the first user index.
 	LoadTestSkeleton();
-
-	// set the hand motion mode of the RawSkeletonStream. This is optional and can be set to any of the HandMotion enum values. Default = None
-	// auto will make it move based on available tracking data. If none is available IMU rotation will be used.
-	const SDKReturnCode t_HandMotionResult = CoreSdk_SetRawSkeletonHandMotion(HandMotion_None);
-	// if (t_HandMotionResult != SDKReturnCode::SDKReturnCode_Success)
-	// {
-	// 	return ClientReturnCode::ClientReturnCode_FailedToInitialize;
-	// }
 }
 
 /// @brief Main loop that receives data from the SDK and processes it.
@@ -206,17 +183,6 @@ bool SDKMinimalClient::Run()
         m_HasNewSkeletonData = true;
 	}
 	m_SkeletonMutex.unlock();
-
-	m_RawSkeletonMutex.lock();
-	if (m_NextRawSkeleton != nullptr)
-	{
-		if (m_RawSkeleton != nullptr)
-			delete m_RawSkeleton;
-		m_RawSkeleton = m_NextRawSkeleton;
-		m_NextRawSkeleton = nullptr;
-	}
-	m_RawSkeletonMutex.unlock();
-
     m_FrameCounter++;
 
     return m_HasNewSkeletonData;
@@ -598,28 +564,5 @@ void SDKMinimalClient::OnSkeletonStreamCallback(const SkeletonStreamInfo *const 
 			delete s_Instance->m_NextSkeleton;
 		s_Instance->m_NextSkeleton = t_NxtClientSkeleton;
 		s_Instance->m_SkeletonMutex.unlock();
-	}
-}
-void SDKMinimalClient::OnRawSkeletonStreamCallback(const SkeletonStreamInfo* const p_RawSkeletonStreamInfo)
-{
-	if (s_Instance)
-	{
-		ClientRawSkeletonCollection* t_NxtClientRawSkeleton = new ClientRawSkeletonCollection();
-		t_NxtClientRawSkeleton->skeletons.resize(p_RawSkeletonStreamInfo->skeletonsCount);
-
-		for (uint32_t i = 0; i < p_RawSkeletonStreamInfo->skeletonsCount; i++)
-		{
-			//Retrieves info on the skeletonData, like deviceID and the amount of nodes.
-			CoreSdk_GetRawSkeletonInfo(i, &t_NxtClientRawSkeleton->skeletons[i].info);
-			t_NxtClientRawSkeleton->skeletons[i].nodes.resize(t_NxtClientRawSkeleton->skeletons[i].info.nodesCount);
-			t_NxtClientRawSkeleton->skeletons[i].info.publishTime = p_RawSkeletonStreamInfo->publishTime;
-
-			//Retrieves the skeletonData, which contains the node data.
-			CoreSdk_GetRawSkeletonData(i, t_NxtClientRawSkeleton->skeletons[i].nodes.data(), t_NxtClientRawSkeleton->skeletons[i].info.nodesCount);
-		}
-		s_Instance->m_RawSkeletonMutex.lock();
-		if (s_Instance->m_NextRawSkeleton != nullptr) delete s_Instance->m_NextRawSkeleton;
-		s_Instance->m_NextRawSkeleton = t_NxtClientRawSkeleton;
-		s_Instance->m_RawSkeletonMutex.unlock();
 	}
 }

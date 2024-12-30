@@ -31,20 +31,6 @@ enum class ClientReturnCode : int
 
 	ClientReturnCode_MAX_CLIENT_RETURN_CODE_SIZE
 };
-/// @brief Used to store the information about the skeleton data coming from the estimation system in Core.
-class ClientRawSkeleton
-{
-public:
-	RawSkeletonInfo info;
-	std::vector<SkeletonNode> nodes;
-};
-
-/// @brief Used to store all the skeleton data coming from the estimation system in Core.
-class ClientRawSkeletonCollection
-{
-public:
-	std::vector<ClientRawSkeleton> skeletons;
-};
 
 /// @brief Used to store the information about the final animated skeletons.
 class ClientSkeleton
@@ -81,13 +67,10 @@ public:
 
     static void OnConnectedCallback(const ManusHost* const p_Host);
 
-	static void OnRawSkeletonStreamCallback(const SkeletonStreamInfo* const p_RawSkeletonStreamInfo);
 	static void OnSkeletonStreamCallback(const SkeletonStreamInfo* const p_SkeletonStreamInfo);
 
 	bool HasNewSkeletonData() { return m_HasNewSkeletonData; }
 	ClientSkeletonCollection* CurrentSkeletons() { return m_Skeleton; }
-	ClientRawSkeletonCollection* CurrentRawSkeletons() { return m_RawSkeleton; }
-
 
 	uint32_t GetRightHandID() { return m_GloveIDs[0]; }
 	uint32_t GetLeftHandID() { return m_GloveIDs[1]; }
@@ -110,10 +93,6 @@ protected:
 
 	std::mutex m_SkeletonMutex;
 
-	std::mutex m_RawSkeletonMutex;
-	ClientRawSkeletonCollection* m_NextRawSkeleton = nullptr;
-	ClientRawSkeletonCollection* m_RawSkeleton = nullptr;
-	
 	bool m_HasNewSkeletonData = false;
 	ClientSkeletonCollection* m_NextSkeleton = nullptr;
 	ClientSkeletonCollection* m_Skeleton = nullptr;
